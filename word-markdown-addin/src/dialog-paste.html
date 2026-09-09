@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; frame-src 'self' https://appsforoffice.microsoft.com; base-uri 'none'; form-action 'none'" />
+  <title>粘贴 Markdown</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 14px;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      font-size: 13px; color: #1a1a1a; background: #fafafa;
+    }
+    h1 { margin: 0 0 6px; font-size: 15px; }
+    .note { font-size: 11.5px; color: #a33; margin-bottom: 10px; }
+    textarea {
+      width: 100%; height: 210px; padding: 10px; resize: vertical;
+      font-family: Consolas, 'Courier New', monospace; font-size: 12px;
+      line-height: 1.5; border: 1px solid #d0d0d0; border-radius: 6px;
+      outline: none; background: #fff;
+    }
+    textarea:focus { border-color: #2b579a; }
+    .row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      font-family: inherit; font-size: 12.5px; padding: 7px 14px;
+      border-radius: 6px; border: 1px solid #d0d0d0; background: #fff; cursor: pointer;
+    }
+    button:hover { background: #f0f0f0; }
+    .primary { background: #2b579a; border-color: #2b579a; color: #fff; font-weight: 600; }
+    .primary:hover { background: #3566ad; }
+    select { font-family: inherit; font-size: 12px; padding: 6px 8px; border-radius: 6px; border: 1px solid #d0d0d0; }
+    .status { font-size: 11.5px; color: #107c10; }
+    label { font-size: 12px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>粘贴 Markdown 并转换为 Word 富文本</h1>
+  <div class="note" id="note"></div>
+
+  <textarea id="input" spellcheck="false" placeholder="# 标题&#10;&#10;- 列表项&#10;- **加粗** 与 *斜体*&#10;&#10;| 列 A | 列 B |&#10;| --- | --- |&#10;| 1 | 2 |"></textarea>
+
+  <div class="row">
+    <button id="convert" class="primary">转换为 Word 富文本</button>
+    <label>排版风格
+      <select id="preset">
+        <option value="default">通用</option>
+        <option value="thesis">论文（宋体/黑体）</option>
+        <option value="semantic">跟随 Word 样式</option>
+      </select>
+    </label>
+    <button id="close">关闭</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="dialog-paste.js"></script>
+</body>
+</html>

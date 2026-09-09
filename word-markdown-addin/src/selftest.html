@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; frame-src 'self' https://appsforoffice.microsoft.com; base-uri 'none'; form-action 'none'" />
+  <title>浏览器内自检</title>
+</head>
+<body>
+  <pre id="out">running…</pre>
+  <script src="core/zip.js"></script>
+  <script src="core/markdown.js"></script>
+  <script src="core/docx2md.js"></script>
+  <script src="selftest.js"></script>
+</body>
+</html>

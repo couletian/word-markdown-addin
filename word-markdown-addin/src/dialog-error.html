@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; frame-src 'self' https://appsforoffice.microsoft.com; base-uri 'none'; form-action 'none'" />
+  <title>提示</title>
+  <style>
+    body {
+      margin: 0; padding: 18px;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      font-size: 13px; color: #1a1a1a; background: #fafafa;
+    }
+    h1 { margin: 0 0 8px; font-size: 15px; color: #a33; }
+    p { margin: 0 0 16px; line-height: 1.6; }
+    button {
+      font-family: inherit; font-size: 12.5px; padding: 7px 16px;
+      border-radius: 6px; border: 1px solid #d0d0d0; background: #fff; cursor: pointer;
+    }
+    button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>操作未完成</h1>
+  <p id="message"></p>
+  <button id="close">关闭</button>
+
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="dialog-error.js"></script>
+</body>
+</html>

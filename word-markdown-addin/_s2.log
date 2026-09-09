@@ -1,0 +1,17 @@
+
+[HTTP 预览模式] http://localhost:3520/taskpane.html
+注意：Word 加载项必须使用 HTTPS，此模式仅用于在浏览器中预览界面。
+
+D:\WYX 2\workbuddy-working space\2026-09-09-19-20-02\word-markdown-addin\server.js:101
+  var clean = decodeURIComponent(pathname.split('?')[0]);
+              ^
+
+URIError: URI malformed
+    at decodeURIComponent (<anonymous>)
+    at resolveFile (D:\WYX 2\workbuddy-working space\2026-09-09-19-20-02\word-markdown-addin\server.js:101:15)
+    at Server.handler (D:\WYX 2\workbuddy-working space\2026-09-09-19-20-02\word-markdown-addin\server.js:127:14)
+    at Server.emit (node:events:519:28)
+    at parserOnIncoming (node:_http_server:1186:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:125:17)
+
+Node.js v22.22.2
