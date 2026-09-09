@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>浏览器内自检</title>
+</head>
+<body>
+  <pre id="out">running…</pre>
+  <script src="core/zip.js"></script>
+  <script src="core/markdown.js"></script>
+  <script src="core/docx2md.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var lines = [];
+      var pass = 0, fail = 0;
+
+      function check(name, cond) {
+        if (cond) { pass++; lines.push('PASS ' + name); }
+        else { fail++; lines.push('FAIL ' + name); }
+      }
+
+      // 1. 全局对象
+      check('WordMd.zip 已加载', typeof WordMd.zip === 'object' && typeof WordMd.zip.unzip === 'function');
+      check('WordMd.markdown 已加载', typeof WordMd.markdown === 'object');
+      check('WordMd.docx2md 已加载', typeof WordMd.docx2md === 'object');
+      check('DOMParser 可用', typeof DOMParser !== 'undefined');
+
+      // 2. Markdown → HTML
+      var md = WordMd.markdown;
+      var h = md.mdToHtml('# 标题\n\n- **粗** 项\n\n| A | B |\n| --- | --- |\n| 1 | 2 |');
+      check('标题转换', h.indexOf('<h1') >= 0);
+      check('加粗转换', h.indexOf('<strong>粗</strong>') >= 0);
+      check('列表转换', h.indexOf('<ul>') >= 0);
+      check('表格转换', h.indexOf('<table') >= 0 && h.indexOf('<th') >= 0);
+      check('内联样式注入', h.indexOf('style=') >= 0);
+
+      // 3. 论文预设
+      var ht = md.mdToHtml('# 标题', { stylePreset: 'thesis' });
+      check('论文预设黑体标题', ht.indexOf('SimHei') >= 0);
+
+      // 4. 语义预设
+      var hs = md.mdToHtml('# 标题', { stylePreset: 'semantic' });
+      check('语义预设无样式', hs.indexOf('style=') < 0);
+
+      // 5. inflate 自洽性：手工构造一个 stored 块
+      try {
+        var raw = new Uint8Array([1, 5, 0, 250, 255, 104, 101, 108, 108, 111]);
+        // BFINAL=1, BTYPE=00, LEN=5, NLEN=0xFFFA, 'hello'
+        var out = WordMd.zip.inflateRaw(raw, 0);
+        check('inflate stored 块', WordMd.zip.text(out) === 'hello');
+      } catch (e) {
+        check('inflate stored 块 (' + e.message + ')', false);
+      }
+
+      // 6. CRC32
+      check('CRC32 已知值', WordMd.zip.crc32(new Uint8Array([104, 101, 108, 108, 111])) === 907060870);
+
+      // 7. 安全过滤（XSS / 危险协议防护）
+      var xss = md.mdToHtml('<' + 'script>alert(1)<' + '/script>');
+      check('script 块被清除', xss.indexOf('alert(1)') < 0 && xss.indexOf('<' + 'script') < 0);
+
+      var js = md.mdToHtml('[链接](javascript:alert(1))');
+      check('javascript: 链接被剥离', js.indexOf('javascript:') < 0 && js.indexOf('>链接</p>') >= 0);
+
+      var iframe = md.mdToHtml('<' + 'iframe src="https://evil.com"><' + '/iframe>');
+      check('iframe 被清除', iframe.indexOf('iframe') < 0 && iframe.indexOf('evil.com') < 0);
+
+      var imgEvt = md.mdToHtml('<img src="x.png" onerror="alert(1)">');
+      check('内联事件属性被移除', imgEvt.indexOf('onerror') < 0 && imgEvt.indexOf('src="x.png"') >= 0);
+
+      // 8. 正常功能不受影响
+      var normal = md.mdToHtml('[链接](https://a.com)\n\n![图](img.png)');
+      check('正常链接保留', normal.indexOf('href="https://a.com"') >= 0);
+      check('正常图片保留', normal.indexOf('src="img.png"') >= 0);
+      var paren = md.mdToHtml('[W](https://x.org/a_(b))');
+      check('URL 内含括号', paren.indexOf('href="https://x.org/a_(b)"') >= 0);
+
+      // 9. Flat OPC 解析（getOoxml 的真实返回格式，非 base64）
+      var FLAT_OPC = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">' +
+        '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">' +
+        '<pkg:xmlData><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+        '<w:body>' +
+        '<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>中文标题</w:t></w:r></w:p>' +
+        '<w:p><w:r><w:t>这是含中文的正文段落。</w:t></w:r></w:p>' +
+        '<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>加粗文字</w:t></w:r></w:p>' +
+        '</w:body></w:w:document></pkg:xmlData></pkg:part>' +
+        '<pkg:part pkg:name="/word/styles.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml">' +
+        '<pkg:xmlData><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+        '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/></w:style>' +
+        '</w:styles></pkg:xmlData></pkg:part>' +
+        '</pkg:package>';
+      try {
+        var flatMd = WordMd.docx2md.docxToMarkdown(FLAT_OPC);
+        check('Flat OPC 标题解析', flatMd.indexOf('# 中文标题') >= 0);
+        check('Flat OPC 中文正文解析', flatMd.indexOf('这是含中文的正文段落。') >= 0);
+        check('Flat OPC 加粗解析', flatMd.indexOf('**加粗文字**') >= 0);
+      } catch (e) {
+        check('Flat OPC 解析 (' + e.message + ')', false);
+      }
+
+      // 10. 回归：含中文的 Flat OPC 不再触发 atob 的 Latin1 报错
+      check('不再误用 atob 解码 OOXML', (function () {
+        try {
+          WordMd.docx2md.docxToMarkdown(FLAT_OPC);
+          return true;
+        } catch (e) {
+          return e.message.indexOf('Latin1') < 0;
+        }
+      })());
+
+      lines.unshift('浏览器自检结果：通过 ' + pass + ' 项，失败 ' + fail + ' 项');
+      document.getElementById('out').textContent = lines.join('\n');
+      document.title = fail === 0 ? 'SELFTEST-OK' : 'SELFTEST-FAIL';
+    })();
+  </script>
+</body>
+</html>

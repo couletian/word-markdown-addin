@@ -1,0 +1,33 @@
+{
+  "name": "word-markdown-addin",
+  "version": "1.0.1",
+  "description": "Microsoft Word 加载项：Word ⇄ Markdown 双向转换（导出 .md、粘贴 Markdown 为富文本、导入 .md 为 Word 文档）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "preview": "node server.js --http",
+    "test": "node test/test-markdown.js && node test/make-fixture.js && node test/test-docx.js && node test/test-roundtrip.js && node test/test-flatopc.js",
+    "test:md": "node test/test-markdown.js",
+    "test:docx": "node test/make-fixture.js && node test/test-docx.js",
+    "test:roundtrip": "node test/test-roundtrip.js",
+    "test:flatopc": "node test/make-fixture.js && node test/test-flatopc.js",
+    "icons": "python assets/make-icons.py && python assets/make-ico.py",
+    "install:addin": "powershell -ExecutionPolicy Bypass -File install.ps1",
+    "launch": "python launcher.py",
+    "build:exe": "build.bat"
+  },
+  "keywords": [
+    "office-addin",
+    "word",
+    "markdown",
+    "docx",
+    "converter"
+  ],
+  "author": "WYX Studio",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {}
+}
